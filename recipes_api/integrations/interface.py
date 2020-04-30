@@ -11,5 +11,7 @@ class RecipesProvider:
             "image_url": "http://site.com/image-of-recipe.jpg"
         }]
     """
+    base_url = ''
+    
     async def search(self, query):
         raise NotImplementedError()

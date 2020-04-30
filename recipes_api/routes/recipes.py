@@ -13,7 +13,8 @@ async def search(request):
     query = data['query']
 
     themealdb_results = await TheMealDB(api_key=MEALDB_APIKEY).search(query=query)
-
+    
+    #TODO aks about preferrences way to merge
     recipepuppy_results = await RecipePuppy().search(query=query)   
 
     return web.json_response(
