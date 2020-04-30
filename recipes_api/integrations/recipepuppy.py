@@ -7,7 +7,6 @@ from .interface import RecipesProvider
 
 class RecipePuppy(RecipesProvider):
     base_url = 'http://www.recipepuppy.com/api/'
-    limit = 5
 
     # TODO ask about instruction
     async def search(self, query):

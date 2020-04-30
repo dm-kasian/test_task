@@ -20,7 +20,7 @@ class TheMealDB(RecipesProvider):
             return []
 
         results = []
-        for meal in response['meals']:
+        for meal in response['meals'][:self.limit]:
             meal_name = meal['strMeal']
             meal_inst = meal['strInstructions']
             meal_img = meal['strMealThumb']

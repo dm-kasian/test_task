@@ -12,6 +12,7 @@ class RecipesProvider:
         }]
     """
     base_url = ''
-    
+    limit = 5
+
     async def search(self, query):
         raise NotImplementedError()
