@@ -1,6 +1,9 @@
 import functools
 from aiohttp import web
 
+__all__ = ['auth_by_api_key']
+
+
 def auth_by_api_key(func):
     @functools.wraps(func)
     async def check(request):
