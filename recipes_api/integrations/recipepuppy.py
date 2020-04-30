@@ -15,10 +15,11 @@ class RecipePuppy(RecipesProvider):
             async with session.get(url) as resp:
                 response = await resp.read()
         response = json.loads(response)
-        if response['results'] is None:
-            return []
-        results = []
 
+        if not response['results']:
+            return []
+
+        results = []
         for meal in response['results'][:self.limit]:
             meal_name = meal['title']
             #TODO maybe to fix

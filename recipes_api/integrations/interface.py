@@ -12,6 +12,7 @@ class RecipesProvider:
         }]
     """
     base_url = ''
+    #TODO ask about 5 items limit (1-st task)
     limit = 5
 
     async def search(self, query):

@@ -1,10 +1,18 @@
 import json
 from aiohttp import web
     
-from recipes_api.config import MEALDB_APIKEY
+from recipes_api.config import (
+    MEALDB_APIKEY,
+    EDAMAM_ID,
+    EDAMAM_APIKEY
+)
+from recipes_api.helpers import (
+    auth_by_api_key,
+    log_requests
+)
 from recipes_api.integrations.themealdb import TheMealDB
 from recipes_api.integrations.recipepuppy import RecipePuppy
-from recipes_api.helpers import auth_by_api_key, log_requests
+from recipes_api.integrations.edamam import Edamam
 
 
 recipes_routes = web.RouteTableDef()
@@ -38,12 +46,14 @@ async def search(request):
 
     themealdb_results = await TheMealDB(api_key=MEALDB_APIKEY).search(query=query)
     #TODO aks about preferrences way to merge
-    recipepuppy_results = await RecipePuppy().search(query=query)   
+    recipepuppy_results = await RecipePuppy().search(query=query)  
+    edamam_results = await Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search(query=query) 
 
     response = {
         "status": "OK", 
         "themealdb_results": themealdb_results,
-        'recipepuppy_results': recipepuppy_results
+        'recipepuppy_results': recipepuppy_results,
+        'edamam_results': edamam_results
     }
     await _cache.set(response)
 

@@ -11,3 +11,6 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 REDIS_ADDRESS = os.getenv("REDIS_ADDRESS", "redis://localhost")
 
 MEALDB_APIKEY = os.getenv("MEALDB_APIKEY", "1")
+
+EDAMAM_ID = os.getenv("EDAMAM_ID", "")
+EDAMAM_APIKEY = os.getenv("EDAMAM_APIKEY", "")
