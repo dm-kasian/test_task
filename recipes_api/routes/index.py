@@ -1,7 +1,7 @@
 import sqlalchemy
 
 from aiohttp import web
-from .auth import auth_by_api_key
+from recipes_api.helpers.auth import auth_by_api_key
 
 index_routes = web.RouteTableDef()
 

@@ -19,7 +19,7 @@ async def connect_to_postgres(app):
 
 
 async def connect_to_redis(app):
-    redis = await aioredis.create_pool(config.REDIS_ADDRESS)
+    redis = await aioredis.create_redis_pool(config.REDIS_ADDRESS)
     app['redis'] = redis
     yield
     redis.close()
