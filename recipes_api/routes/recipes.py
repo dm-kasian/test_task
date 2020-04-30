@@ -1,3 +1,4 @@
+import json
 from aiohttp import web
     
 from recipes_api.config import MEALDB_APIKEY
@@ -5,23 +6,22 @@ from recipes_api.integrations.themealdb import TheMealDB
 from recipes_api.integrations.recipepuppy import RecipePuppy
 from recipes_api.helpers.auth import auth_by_api_key
 
-import json
-from aiohttp import web
 
 recipes_routes = web.RouteTableDef()
 
+class SearchCache:
+    def __init__(self, request, query):
+        self.redis = request.app['redis']
+        self.cache_key = f'{request.path}_{query}' 
+        
+    async def get(self):
+        response = await self.redis.get(self.cache_key, encoding='utf-8')
+        if response:
+            return json.loads(response)
 
-async def _get_cached_response(app, cache_key):
-    redis = app['redis']
-    response = await redis.get(cache_key, encoding='utf-8')
-    if response:
-        return json.loads(response)
-
-
-async def _set_cached_response(app, cache_key, response, timeout=30):
-    redis = app['redis']
-    await redis.set(cache_key, json.dumps(response))
-    await redis.expire(cache_key, timeout)
+    async def set(self, response, timeout=30):
+        await self.redis.set(self.cache_key, json.dumps(response))
+        await self.redis.expire(self.cache_key, timeout)
 
 
 @recipes_routes.post('/recipes/search')
@@ -29,9 +29,9 @@ async def _set_cached_response(app, cache_key, response, timeout=30):
 async def search(request):
     data = await request.json()
     query = data['query']
+    _cache = SearchCache(request, query)
 
-    cache_key = f'{request.path}_{query}' 
-    cached_responce = await _get_cached_response(request.app, cache_key)
+    cached_responce = await _cache.get()
     if cached_responce:
         return web.json_response(cached_responce)
 
@@ -44,6 +44,6 @@ async def search(request):
         "themealdb_results": themealdb_results,
         'recipepuppy_results': recipepuppy_results
     }
-    await _set_cached_response(request.app, cache_key, response)
+    await _cache.set(response)
 
     return web.json_response(response)
