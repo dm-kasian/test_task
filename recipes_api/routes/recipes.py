@@ -1,6 +1,7 @@
 from aiohttp import web
 from recipes_api.config import MEALDB_APIKEY
 from recipes_api.integrations.themealdb import TheMealDB
+from recipes_api.integrations.recipepuppy import RecipePuppy
 
 
 recipes_routes = web.RouteTableDef()
@@ -13,7 +14,12 @@ async def search(request):
 
     themealdb_results = await TheMealDB(api_key=MEALDB_APIKEY).search(query=query)
 
-    # TODO: Implement RecipePuppy API and merge results
-    # recipepuppy_results = await RecipePuppy().search(query=query)
+    recipepuppy_results = await RecipePuppy().search(query=query)   
 
-    return web.json_response({"status": "OK", "results": themealdb_results})
+    return web.json_response(
+        {
+            "status": "OK", 
+            "themealdb_results": themealdb_results,
+            'recipepuppy_results': recipepuppy_results
+        }
+    )

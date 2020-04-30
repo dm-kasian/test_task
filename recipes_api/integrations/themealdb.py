@@ -1,16 +1,18 @@
-from .interface import RecipesProvider
 import aiohttp
+from .interface import RecipesProvider
 
 # API Docs: https://www.themealdb.com/api.php
 
 
 class TheMealDB(RecipesProvider):
+    base_url = 'https://www.themealdb.com/api/json/v1/'
+
     def __init__(self, api_key):
         self.api_key = api_key
 
     async def search(self, query):
         async with aiohttp.ClientSession() as session:
-            url = 'https://www.themealdb.com/api/json/v1/' + self.api_key + '/search.php?s=' + query
+            url = self.base_url + self.api_key + '/search.php?s=' + query
             async with session.get(url) as resp:
                 response = await resp.json()
 
