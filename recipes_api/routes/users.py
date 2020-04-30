@@ -14,9 +14,12 @@ async def register(request):
     password = data['password'].encode()
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
     hased_password = hashed.decode('utf-8')
+    api_key = str(uuid.uuid4())
+    print(api_key)
     try:
         await request.app['pg'].fetchrow(
-            'INSERT INTO users (username, password) VALUES ($1, $2)', username, hased_password
+            'INSERT INTO users (username, password, api_key) VALUES ($1, $2, $3)', 
+            username, hased_password, api_key
         )
     #TODO use "if" instead of "try...except"
     except UniqueViolationError as e:
@@ -35,7 +38,6 @@ async def get_me(request):
     data = await request.json()
     username = data['username']
     password = data['password']
-    update = data['update']
 
     user = await request.app['pg'].fetchrow("SELECT * FROM users WHERE username = $1", username)
 
@@ -44,6 +46,8 @@ async def get_me(request):
     elif not bcrypt.checkpw(password.encode(), user.get('password').encode()):
         response = {'status': 'ERROR' , 'message': 'Wrong password!'}
     else:
-        response = {'username': user['username']}
+        api_key = user.get('api_key')
+
+        response = {'api_key': api_key}
 
     return web.json_response(response)
