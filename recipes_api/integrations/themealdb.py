@@ -1,4 +1,6 @@
+import asyncio
 import aiohttp
+
 from .interface import RecipesProvider
 
 # API Docs: https://www.themealdb.com/api.php
@@ -21,25 +23,35 @@ class TheMealDB(RecipesProvider):
     async def search_by_ingredient(self, query):
         # Actually in this case it is a filter.
 
-        # Get only first one, because: filter by multi-ingredient (only available to $2+ Patreon supporters) (from: https://www.themealdb.com/api.php)
+        # Get only first one, because: filter by multi-ingredient only available to $2+ Patreon supporters 
+        #(from: https://www.themealdb.com/api.php)
         ingredient = query.split(',')[0] 
 
-        #TODO refactor it!!!
+        #TODO refactor it!
         async with aiohttp.ClientSession() as session:
             url = self.base_url + self.api_key + '/filter.php?i=' + ingredient
-            details_url = self.base_url + self.api_key + '/lookup.php?i='
             async with session.get(url) as resp:
                 general_info_response = await resp.json()
-                meals =  general_info_response['meals']
-
-            response = {'meals': []}
+            
+            meals =  general_info_response['meals'][:self.limit]
             if meals:
-                for meal in general_info_response['meals'][:self.limit]:
-                    url = details_url + meal['idMeal']
-                    async with session.get(url) as resp:
-                        meal_details = await resp.json()
-                        response['meals'].append(meal_details['meals'][0])
+                details = await asyncio.gather(
+                    *(self._get_meal_details(meal, session) for meal in meals)
+                )
+                response = {'meals': list(details)}
+            else:
+                response = {'meals': []}
+
         return self._prepare_results(response)
+
+    async def _get_meal_details(self, meal, session):
+        ''' Get all info about meal for searching by ingredient.
+        '''
+        url = self.base_url + self.api_key + '/lookup.php?i=' + meal['idMeal']
+        async with session.get(url) as resp:
+            meal_details = await resp.json()
+        return meal_details['meals'][0]
+
 
     @classmethod
     def _prepare_results(cls, response):

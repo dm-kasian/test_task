@@ -6,10 +6,15 @@ from asyncpg.exceptions import UniqueViolationError
 
 users_routes = web.RouteTableDef()
 
+def validate_body(data):
+    return data.get('username') and data.get('password')
 
 @users_routes.post('/users/register')
 async def register(request):
     data = await request.json()
+    if not validate_body(data):
+        raise web.HTTPBadRequest(text='"username" and "password" keys are required!')
+
     username = data['username']
     password = data['password'].encode()
 
@@ -36,6 +41,9 @@ async def register(request):
 @users_routes.post('/users/me')
 async def get_me(request):
     data = await request.json()
+    if not validate_body(data):
+        raise web.HTTPBadRequest(text='"username" and "password" keys are required!')
+
     username = data['username']
     password = data['password']
 

@@ -22,7 +22,7 @@ class Edamam(RecipesProvider):
         # According to API documetation there are not different way to search by ingredients.
         # And the search endpoint works for ingredients as well. 
         return await self.search(query)
-        
+
     @classmethod
     def _prepare_results(cls, response):
 

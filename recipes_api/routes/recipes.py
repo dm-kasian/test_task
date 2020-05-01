@@ -77,9 +77,9 @@ async def search_by_ingredient(request):
     if cached_responce:
         return web.json_response(cached_responce)
 
-    themealdb_results = asyncio.create_task(TheMealDB(api_key=MEALDB_APIKEY).search_by_ingredient(query=query))
-    recipepuppy_results = asyncio.create_task(RecipePuppy().search_by_ingredient(query=query))
-    edamam_results = asyncio.create_task(Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search_by_ingredient(query=query))
+    themealdb_results = TheMealDB(api_key=MEALDB_APIKEY).search_by_ingredient(query=query)
+    recipepuppy_results = RecipePuppy().search_by_ingredient(query=query)
+    edamam_results = Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search_by_ingredient(query=query)
     results = await asyncio.gather(themealdb_results, recipepuppy_results, edamam_results)
 
     response = {
@@ -91,4 +91,3 @@ async def search_by_ingredient(request):
     await _cache.set(response)
 
     return web.json_response(response)
-    

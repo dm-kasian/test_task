@@ -18,9 +18,9 @@ class RecipePuppy(RecipesProvider):
         return self._prepare_results(response)
 
     async def search_by_ingredient(self, query):
-        # Actually in this case it is a filter as well.
+        # Actually in this case it is a filter.
         async with aiohttp.ClientSession() as session:
-            url = self.base_url + '?in=' + query
+            url = self.base_url + '?i=' + query
             async with session.get(url) as resp:
                 response = await resp.read()
         response = json.loads(response)
