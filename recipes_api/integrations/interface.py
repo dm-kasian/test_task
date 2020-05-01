@@ -17,3 +17,6 @@ class RecipesProvider:
 
     async def search(self, query):
         raise NotImplementedError()
+
+    async def search_by_ingredient(self, query):
+        raise NotImplementedError()

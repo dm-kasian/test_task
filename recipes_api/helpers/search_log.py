@@ -17,11 +17,13 @@ def log_requests(func):
         )
         if user:
             data = await request.json()
-            query = data['query']
-            await request.app['pg'].fetchrow(
-                'INSERT INTO recipes_search_logs (user_id, query, request_datetime) VALUES ($1, $2, $3)', 
-                user.get('id'), query, datetime.utcnow()
-            )
+            query = data.get('query')
+            #TODO remove nested "if"
+            if query:
+                await request.app['pg'].fetchrow(
+                    'INSERT INTO recipes_search_logs (user_id, query, request_datetime) VALUES ($1, $2, $3)', 
+                    user.get('id'), query, datetime.utcnow()
+                )
         return await func(request)
 
     return wrap

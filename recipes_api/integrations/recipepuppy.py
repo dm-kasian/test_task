@@ -15,12 +15,24 @@ class RecipePuppy(RecipesProvider):
             async with session.get(url) as resp:
                 response = await resp.read()
         response = json.loads(response)
+        return self._prepare_results(response)
 
+    async def search_by_ingredient(self, query):
+        # Actually in this case it is a filter as well.
+        async with aiohttp.ClientSession() as session:
+            url = self.base_url + '?in=' + query
+            async with session.get(url) as resp:
+                response = await resp.read()
+        response = json.loads(response)
+        return self._prepare_results(response)
+
+    @classmethod
+    def _prepare_results(cls, response):
         if not response['results']:
             return []
 
         results = []
-        for meal in response['results'][:self.limit]:
+        for meal in response['results'][:cls.limit]:
             meal_name = meal['title']
             #TODO maybe to fix
             meal_inst = (

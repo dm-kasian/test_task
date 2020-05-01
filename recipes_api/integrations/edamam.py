@@ -16,8 +16,17 @@ class Edamam(RecipesProvider):
             url = f'{self.base_url}?app_id={self.app_id}&app_key={self.app_key}&q={query}&to={self.limit}'
             async with session.get(url) as resp:
                 response = await resp.json()
+        return self._prepare_results(response)
 
-        if not response['count']:
+    async def search_by_ingredient(self, query):
+        # According to API documetation there are not different way to search by ingredients.
+        # And the search endpoint works for ingredients as well. 
+        return await self.search(query)
+        
+    @classmethod
+    def _prepare_results(cls, response):
+
+        if not response.get('count'):
             return []
 
         results = []

@@ -1,4 +1,5 @@
 import json
+import asyncio
 from aiohttp import web
     
 from recipes_api.config import (
@@ -37,24 +38,57 @@ class SearchCache:
 @log_requests
 async def search(request):
     data = await request.json()
-    query = data['query']
+    query = data.get('query')
+    if query is None:
+        raise web.HTTPBadRequest(text='"query" key is required!')
+
     _cache = SearchCache(request, query)
 
     cached_responce = await _cache.get()
     if cached_responce:
         return web.json_response(cached_responce)
 
-    themealdb_results = await TheMealDB(api_key=MEALDB_APIKEY).search(query=query)
-    #TODO aks about preferrences way to merge
-    recipepuppy_results = await RecipePuppy().search(query=query)  
-    edamam_results = await Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search(query=query) 
+    themealdb_results = TheMealDB(api_key=MEALDB_APIKEY).search(query=query)
+    recipepuppy_results = RecipePuppy().search(query=query)
+    edamam_results = Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search(query=query)
+    results = await asyncio.gather(themealdb_results, recipepuppy_results, edamam_results)
 
     response = {
         "status": "OK", 
-        "themealdb_results": themealdb_results,
-        'recipepuppy_results': recipepuppy_results,
-        'edamam_results': edamam_results
+        "themealdb_results": results[0],
+        'recipepuppy_results': results[1],
+        'edamam_results': results[2]
     }
     await _cache.set(response)
 
     return web.json_response(response)
+
+
+@recipes_routes.post('/recipes/search-ingr')
+@auth_by_api_key
+async def search_by_ingredient(request):
+    data = await request.json()
+    query = data.get('query')
+    if query is None:
+        raise web.HTTPBadRequest(text='"query" key is required!')
+    _cache = SearchCache(request, query)
+
+    cached_responce = await _cache.get()
+    if cached_responce:
+        return web.json_response(cached_responce)
+
+    themealdb_results = asyncio.create_task(TheMealDB(api_key=MEALDB_APIKEY).search_by_ingredient(query=query))
+    recipepuppy_results = asyncio.create_task(RecipePuppy().search_by_ingredient(query=query))
+    edamam_results = asyncio.create_task(Edamam(app_id=EDAMAM_ID, app_key=EDAMAM_APIKEY).search_by_ingredient(query=query))
+    results = await asyncio.gather(themealdb_results, recipepuppy_results, edamam_results)
+
+    response = {
+        "status": "OK", 
+        "themealdb_results": results[0],
+        'recipepuppy_results': results[1],
+        'edamam_results': results[2]
+    }
+    await _cache.set(response)
+
+    return web.json_response(response)
+    
