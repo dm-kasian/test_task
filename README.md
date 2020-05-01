@@ -54,3 +54,8 @@ recipes by an ingredient instead of name.
 8. Fix any security/performance issues you might find
 
 9. Upload the completed project to any public git websites (e.g. GitHub, GitLab)
+
+### Questions
+1. How should look merged json?
+2. "Make sure to get the first 5 recipes for each search". Does it means to get only 5 items from each remote API?
+3. "recipepuppy" also does not return the recipe instructions. Should I return them as `None` in the API**?
